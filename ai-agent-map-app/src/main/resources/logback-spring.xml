@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- 配置文件修改时重新加载，默认true -->
+<configuration scan="true">
+
+    <include resource="org/springframework/boot/logging/logback/defaults.xml" />
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml" />
+
+    <!--控制台使用异步打印，防止阻塞-->
+    <appender name="asyncConsoleAppender" class="ch.qos.logback.classic.AsyncAppender">
+        <!-- 队列的深度，该值会影响性能，默认 256 -->
+        <queueSize>256</queueSize>
+        <!-- 设为 0 表示队列达到 80%，也不丢弃任务-->
+        <discardingThreshold>0</discardingThreshold>
+        <!-- 日志上下文关闭后，AsyncAppender 继续执行写任务的时间，单位毫秒 -->
+        <maxFlushTime>1000</maxFlushTime>
+        <!-- 队列满了是否直接丢弃要写的消息，false、丢弃，true、不丢弃 -->
+        <neverBlock>true</neverBlock>
+        <!--是否记录调用栈-->
+        <includeCallerData>true</includeCallerData>
+        <!--One and only one appender may be attached to AsyncAppender，添加多个的话后面的会被忽略-->
+        <appender-ref ref="CONSOLE"/>
+    </appender>
+
+    <appender name="fileAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+            <charset>${FILE_LOG_CHARSET}</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/app_%d{yyyy-MM-dd}_%i.log</fileNamePattern>
+            <maxHistory>10</maxHistory>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>10MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+    </appender>
+    <appender name="asyncFile" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="fileAppender" />
+    </appender>
+
+    <springProfile name="default">
+        <root level="info">
+            <appender-ref ref="asyncConsoleAppender"/>
+        </root>
+    </springProfile>
+    <springProfile name="dev">
+        <root level="info">
+            <appender-ref ref="asyncFile"/>
+        </root>
+    </springProfile>
+    <springProfile name="staging">
+        <root level="info">
+            <appender-ref ref="asyncLoki"/>
+        </root>
+    </springProfile>
+    <springProfile name="prod">
+        <root level="info">
+            <appender-ref ref="asyncLoki"/>
+        </root>
+    </springProfile>
+
+</configuration>

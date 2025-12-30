@@ -1,0 +1,32 @@
+server:
+  port: 8080
+spring:
+  application:
+    name: ai-agent-map
+  servlet:
+    multipart:
+      max-file-size: 210MB
+      max-request-size: 210MB
+  mvc:
+    async:
+      request-timeout: 600000
+  web:
+    resources:
+      add-mappings: false
+agent:
+  map:
+    client:
+      ab:
+        url: https://lanyi-agent.ccccltd.cn/api/ai_apaas
+        version: /v1
+      dify:
+        url: http://106.63.7.106:10001/build_agent/v1
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs    #swagger后端请求路径
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html  # swagger前端请求路径
+    csrf:
+      enabled: true
